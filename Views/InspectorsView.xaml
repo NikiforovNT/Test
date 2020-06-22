@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="Тестовое_задание.Views.InspectorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:Тестовое_задание.Viewmodels"
+             xmlns:r ="clr-namespace:Тестовое_задание.Base"
+             mc:Ignorable="d">
+    <UserControl.DataContext>
+        <vm:InspectorsViewModel/>
+    </UserControl.DataContext>
+    <DockPanel>      
+        <DockPanel Visibility="{Binding EditPanelVisibility}" DockPanel.Dock="Bottom" LastChildFill="False">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                <Label Content="Имя инспектора"  Margin="5" Width="120"/>
+                <TextBox Text="{Binding EditInspector.Name, UpdateSourceTrigger=PropertyChanged}"  Margin="5" Width="250"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                <Label Content="Номер инспектора"  Margin="5" Width="120"/>
+                <TextBox Margin="5" Width="250">
+                    <TextBox.Text>
+                        <Binding Path="EditInspector.Number" UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <r:InspectorNumberValidationRule/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+            </StackPanel>
+            <Button Content="Отменить" Height="25" Margin="5" Command="{Binding CancelCommand}" Width="70" DockPanel.Dock="Right"/>
+            <Button Content="Сохранить" Height="25" Margin="5" Command="{Binding SaveCommand}" Width="70" DockPanel.Dock="Right"/>
+            
+        </DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" IsEnabled="{Binding IsButtonsEnable}">
+            <Button Content="Добавить" Height="25" Margin="5" Command="{Binding AddCommand}" Width="70"/>
+            <Button Content="Изменить" Height="25" Margin="5" Command="{Binding EditCommand}" Width="70"/>
+            <Button Content="Удалить" Height="25" Margin="5" Command="{Binding DeleteCommand}" Width="70"/>
+        </StackPanel>
+        <DataGrid DockPanel.Dock="Top" ItemsSource="{Binding InspectorsTable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" SelectedItem="{Binding SelectedInspector, UpdateSourceTrigger=PropertyChanged}" 
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Имя инспектора"  Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Номер инспектора"  Binding="{Binding Number, UpdateSourceTrigger=PropertyChanged}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

@@ -12,20 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Тестовое_задание.Models;
 
-namespace Тестовое_задание
+namespace Тестовое_задание.Views
 {
     /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
+    /// Логика взаимодействия для InspectionsView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class InspectionsView : UserControl
     {
-        public MainWindow()
+        public InspectionsView()
         {
-            
             InitializeComponent();
-
         }
     }
 }

@@ -6,7 +6,7 @@
         xmlns:v="clr-namespace:Тестовое_задание.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <DockPanel>
-        <v:InspectorView/>
+    <DockPanel>        
+        <v:InspectionsView/>
     </DockPanel>
 </Window>

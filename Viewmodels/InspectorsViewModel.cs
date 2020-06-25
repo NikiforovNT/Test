@@ -3,6 +3,7 @@ using System.Linq;
 using Тестовое_задание.Models;
 using Тестовое_задание.Base;
 using System.Windows;
+using System;
 
 
 namespace Тестовое_задание.Viewmodels
@@ -15,10 +16,13 @@ namespace Тестовое_задание.Viewmodels
         private Command _SaveCommand;
         private Command _CancelCommand;
         private EntityStatus _Status;
-        private Inspectors _EditInspector;
         private Inspectors _SelectedInspector;
         private bool _IsButtonsEnable;
+        private bool _IsSaveButtonEnable;
         private Visibility _EditPanelVisibility;
+        private int _Number;
+        private string _Name;
+        private Guid _ID;
 
 
         public ObservableCollection<Inspectors> InspectorsTable { get; set; }
@@ -34,18 +38,7 @@ namespace Тестовое_задание.Viewmodels
                 OnPropertyChanged("SelectedInspector");
             }
         }
-        public Inspectors EditInspector 
-        {
-            get 
-            {
-                return _EditInspector;
-            }
-            set
-            {
-                _EditInspector = value;
-                OnPropertyChanged("EditInspector");
-            }
-        }
+
         public Visibility EditPanelVisibility
         {
             get
@@ -70,7 +63,64 @@ namespace Тестовое_задание.Viewmodels
                 OnPropertyChanged("IsButtonsEnable");
             }
         }
-
+        public bool IsSaveButtonEnable
+        {
+            get
+            {
+                return _IsSaveButtonEnable;
+            }
+            set
+            {
+                _IsSaveButtonEnable = value;
+                OnPropertyChanged("IsSaveButtonEnable");
+            }
+        }
+        public string ErrorMessage { get; set; }
+        public string Name
+        {
+            get
+            {
+                return _Name;
+            }
+            set
+            {
+                IsSaveButtonEnable = true;
+                ErrorMessage = "";
+                if (value == "")
+                {
+                    ErrorMessage = "Поле \"Имя инспектора\" не может быть пустым";
+                    IsSaveButtonEnable = false;
+                }
+                _Name = value;
+                OnPropertyChanged("Name");
+                OnPropertyChanged("ErrorMessage");
+            }
+        }
+        public int Number
+        {
+            get
+            {
+                return _Number;
+            }
+            set
+            {
+                IsSaveButtonEnable = true;
+                ErrorMessage = "";
+                if (value == 0)
+                {
+                    ErrorMessage = "Поле \"Номер Инспектора\" не может быть пустым";
+                    IsSaveButtonEnable = false;
+                }
+                if (_Status == EntityStatus.New && InspectorsTable.FirstOrDefault(i => i.Number == value) != null)
+                {
+                    ErrorMessage = "Номер не уникальный";
+                    IsSaveButtonEnable = false;
+                }
+                _Number = value;
+                OnPropertyChanged("Number");
+                OnPropertyChanged("ErrorMessage");
+            }
+        }
 
         public Command AddCommand
         {
@@ -79,7 +129,8 @@ namespace Тестовое_задание.Viewmodels
                 return _AddCommand ??
                   (_AddCommand = new Command(obj =>
                   {
-                      EditInspector = new Inspectors();
+                      Name = "";
+                      Number = 0;
                       _Status = EntityStatus.New;
                       EditPanelVisibility = Visibility.Visible;
                       IsButtonsEnable = false;
@@ -93,13 +144,15 @@ namespace Тестовое_задание.Viewmodels
                 return _EditCommand ??
                   (_EditCommand = new Command(obj =>
                   {
-                      EditInspector.ID = SelectedInspector.ID;
-                      EditInspector.Name = SelectedInspector.Name;
-                      EditInspector.Number = SelectedInspector.Number;
-                      _Status = EntityStatus.Edit;
-                      EditPanelVisibility = Visibility.Visible;
-                      IsButtonsEnable = false;
-                      OnPropertyChanged("EditInspector");
+                      if (SelectedInspector != null)
+                      {
+                          _ID = SelectedInspector.ID;
+                          Name = SelectedInspector.Name;
+                          Number = SelectedInspector.Number;
+                          _Status = EntityStatus.Edit;
+                          EditPanelVisibility = Visibility.Visible;
+                          IsButtonsEnable = false;
+                      }
                   }));
             }
         }
@@ -110,14 +163,16 @@ namespace Тестовое_задание.Viewmodels
                 return _DeleteCommand ??
                   (_DeleteCommand = new Command(obj =>
                   {
-                      using (UserContext db = new UserContext())
+                      if (SelectedInspector != null)
                       {
-                          db.Inspectors.Attach(InspectorsTable.Single(i => i.ID == SelectedInspector.ID));
-                          db.Inspectors.Remove(InspectorsTable.Single(i => i.ID == SelectedInspector.ID));
-                          db.SaveChanges();
+                          using (UserContext db = new UserContext())
+                          {
+                              db.Inspectors.Attach(InspectorsTable.Single(i => i.ID == SelectedInspector.ID));
+                              db.Inspectors.Remove(InspectorsTable.Single(i => i.ID == SelectedInspector.ID));
+                              db.SaveChanges();
+                          }
+                          InspectorsTable.Remove(SelectedInspector);
                       }
-
-                      InspectorsTable.Remove(SelectedInspector);
                   }));
             }
         }
@@ -128,23 +183,20 @@ namespace Тестовое_задание.Viewmodels
                 return _SaveCommand ??
                   (_SaveCommand = new Command(obj =>
                   {
-                      if(_Status == EntityStatus.New)
-                      {
-                          InspectorsTable.Add(new Inspectors(EditInspector.ID, EditInspector.Name, EditInspector.Number));
+                      if (_Status == EntityStatus.New)
+                      {                          
                           using (UserContext db = new UserContext())
                           {
-                              db.Inspectors.Add(new Inspectors(EditInspector.ID, EditInspector.Name, EditInspector.Number));
+                              db.Inspectors.Add(new Inspectors(Guid.NewGuid(), Name, Number));
                               db.SaveChanges();
                           }
                       }
-                      if(_Status == EntityStatus.Edit)
+                      if (_Status == EntityStatus.Edit)
                       {
-                          InspectorsTable.Single(i => i.ID == EditInspector.ID).Name = EditInspector.Name;
-                          InspectorsTable.Single(i => i.ID == EditInspector.ID).Number = EditInspector.Number;
                           using (UserContext db = new UserContext())
                           {
-                              db.Inspectors.Single(i => i.ID == EditInspector.ID).Name = EditInspector.Name;
-                              db.Inspectors.Single(i => i.ID == EditInspector.ID).Number = EditInspector.Number;
+                              db.Inspectors.Single(i => i.ID == _ID).Name = Name;
+                              db.Inspectors.Single(i => i.ID == _ID).Number = Number;
                               db.SaveChanges();
                           }
                       }
@@ -182,12 +234,11 @@ namespace Тестовое_задание.Viewmodels
 
 
         public InspectorsViewModel()
-        {            
+        {
             InspectorsTable = new ObservableCollection<Inspectors>();
-            EditInspector = new Inspectors();
             EditPanelVisibility = Visibility.Collapsed;
             IsButtonsEnable = true;
             Update();
         }
-    }        
+    }
 }

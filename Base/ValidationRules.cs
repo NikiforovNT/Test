@@ -16,7 +16,6 @@ namespace Тестовое_задание.Base
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
             int number = 0;
-
             try
             {
                 if (((string)value).Length > 0)

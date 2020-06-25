@@ -18,7 +18,7 @@ namespace Тестовое_задание.Views
     /// <summary>
     /// Логика взаимодействия для InspectorView.xaml
     /// </summary>
-    public partial class InspectorView : UserControl
+    public partial class InspectorView : Window
     {
         public InspectorView()
         {
